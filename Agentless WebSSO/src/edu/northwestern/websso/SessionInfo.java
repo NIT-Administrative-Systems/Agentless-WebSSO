@@ -1,5 +1,7 @@
 package edu.northwestern.websso;
 
+import java.time.Clock;
+import java.time.ZonedDateTime;
 import java.util.Properties;
 
 public class SessionInfo {
@@ -7,22 +9,58 @@ public class SessionInfo {
 	private String username;
 	private String universalId;
 	private String realm;
+
+	// Last time session was accessed in GMT
 	private String latestAccessTime;
+
+	// Idle timeout
 	private String maxIdleExpirationTime;
+
+	// When the session expires
 	private String maxSessionExpirationTime;
 	private Properties properties;
 	private boolean valid = true;
-
-	public boolean isValid() {
-		return valid;
-	}
-
-	public void setValid(boolean valid) {
-		this.valid = valid;
-	}
+	private long nextCheckTime = 0L;
 
 	public SessionInfo() {
 
+	}
+
+	/**
+	 * If the maxSessionExpirationTime has passed, or the maxIdleExpirationTime has passed, or
+	 * 
+	 * @return
+	 */
+	public boolean requiresRecheck() {
+		long currentTime = System.currentTimeMillis();
+		if (nextCheckTime > currentTime) {
+			return false;
+		}
+		else {
+			return true;
+		}
+	}
+
+	public boolean isExpired() {
+		// Check to see maxIdleExpirationTime has passed
+		// LocalDateTime nowUTC = LocalDateTime.now();
+		ZonedDateTime nowUTC = ZonedDateTime.now(Clock.systemUTC());
+		ZonedDateTime maxSessionExpirationTimeUTC = ZonedDateTime.parse(maxSessionExpirationTime);
+		if (nowUTC.isAfter(maxSessionExpirationTimeUTC)) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	public boolean isValid() {
+		if (!valid || isExpired() || username == null) {
+			return false;
+		}
+		else {
+			return true;
+		}
 	}
 
 	public String getUsername() {
@@ -94,5 +132,18 @@ public class SessionInfo {
 		else {
 			return false;
 		}
+	}
+
+	public long getNextCheckTime() {
+		return nextCheckTime;
+	}
+
+	public void setNextCheckTime(long nextCheckTime) {
+		this.nextCheckTime = nextCheckTime;
+	}
+
+	public void invalidate() {
+		valid = false;
+		username = null;
 	}
 }
