@@ -78,7 +78,7 @@ public class AuthenticationFilter implements Filter {
 	// Session Property returned by OpenAM that tells whether a person went through MFA or not
 	private static final String DUO_SESSION_PROPERTY_NAME = "isDuoAuthenticated";
 
-	private static final Logger logger = LoggerFactory.getLogger("logger");
+	private static final Logger logger = LoggerFactory.getLogger(AuthenticationFilter.class.getName());
 
 	private static final int OPENAM_REST_TIMEOUT_SECONDS = 6;
 
@@ -151,8 +151,9 @@ public class AuthenticationFilter implements Filter {
 				}
 			}
 			catch (Exception e) {
-				// We could just direct them to websso again. Or we could send them to an application specific error
-				// page?
+				//This will redirect to the login page.  If they have a token, but for some reason an error occurred
+				//while attempting to validate it this could cause infinite redirect loop of erroring/sending to OpenAm which
+				//sends them back here.  Might need to add something to the session to keep track of this and break out of the cycle and send to ERROR_PAGE
 				logger.error("An exception occured while trying to verify the WebSSO token.", e);
 			}
 		}
