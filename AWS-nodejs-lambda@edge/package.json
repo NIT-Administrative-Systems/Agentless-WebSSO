@@ -1,0 +1,15 @@
+{
+  "name": "lambda-at-edge-code",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "lambda-local -l index.js -h handler -e test-edge-event.js"
+  },
+  "devDependencies": {
+    "lambda-local": "^1.5.1"
+  },
+  "dependencies": {
+    "axios": "^0.18.0"
+  }
+}
